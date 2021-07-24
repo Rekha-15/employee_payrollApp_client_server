@@ -1,16 +1,33 @@
 let empPayrollList;
 window.addEventListener('DOMContentLoaded',(event)=>{
-    empPayrollList = getEmployeePayrollDataFromStorage();
-  document.querySelector(".emp-count").textContent = empPayrollList.length;
-    createInnerHTML();
-    localStorage.removeItem("editEmp");
+  if (site_properties.use_local_storage.match("true")) {
+    getEmployeePayrollDataFromStorage();
+  } else getEmployeePayrollDataFromServer();
 }
 );
 const getEmployeePayrollDataFromStorage = () => {
-    return localStorage.getItem('EmployeePayrollList') ? 
+    empPayrollList= localStorage.getItem('EmployeePayrollList') ? 
                         JSON.parse(localStorage.getItem('EmployeePayrollList')) : [];  
+     processEmployeePayrollDataResponse();
   }
-  
+  const processEmployeePayrollDataResponse = () => {
+    document.querySelector(".emp-count").textContent = empPayrollList.length;
+    createInnerHTML();
+    localStorage.removeItem("editEmp");
+  };
+  function getEmployeePayrollDataFromServer() {
+  makeServiceCall("GET", site_properties.server_url, true)
+    .then((responseText) => {
+      empPayrollList = JSON.parse(responseText);
+      processEmployeePayrollDataResponse();
+    })
+    .catch((error) => {
+      console.log("GET Error Status: " + JSON.stringify(error));
+      alert(error);
+      empPayrollList = [];
+      processEmployeePayrollDataResponse();
+    });
+}
 
 const createInnerHTML =()=>{
     const headerHTML=" <th></th><th>Name</th><th>Gender</th><th>Departments</th><th>Salary</th><th>StartDate</th>";
@@ -87,4 +104,35 @@ const createEmployeePayrollJSON = () => {
     if (!empPayrollData) return;
     localStorage.setItem("editEmp", JSON.stringify(empPayrollData))
     window.location.replace(site_properties.add_emp_payroll_page);
-}
+  }
+  function makeServiceCall(methodType, url, async = true, data = null) {
+    return new Promise(function (resolve, reject) {
+       let xhr = new XMLHttpRequest();
+       xhr.onload = function(){
+          console.log(methodType+" State Changed Called. Ready State: "+
+                      xhr.readyState+" Status:"+xhr.status);
+          if (xhr.status.toString().match('^[2][0-9]{2}$')) {
+             resolve(xhr.responseText);
+          } else if (xhr.status.toString().match('^[4,5][0-9]{2}$')) {
+             reject({
+                status: xhr.status,
+                statusText: xhr.statusText
+             });
+             console.log("XHR Failed");
+          }
+       }
+       xhr.onerror = function () {
+         reject({
+             status: this.status,
+             statusText: xhttp.statusText
+         });
+       };
+       xhr.open(methodType, url, async);
+       if (data) {
+          console.log(JSON.stringify(data));
+          xhr.setRequestHeader("Content-Type", "application/json");
+          xhr.send(JSON.stringify(data));
+       } else xhr.send();
+       console.log(methodType+" request sent to the server");
+    });
+ }
