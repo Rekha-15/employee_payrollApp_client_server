@@ -26,16 +26,30 @@
         "_profilePic": "../assets/profile-images/Ellipse -3.png"
       },
       {
-        "_name": "Rekha",
+        "_name": "Rashmi",
         "_gender": "female",
         "_department": [
-          "Engineering"
+          "Sales"
         ],
         "_salary": "700000",
         "_startDate": "29 Oct 2019",
         "_note": "",
         "_profilePic": "../assets/profile-images/Ellipse -7.png",
         "id": 3
+      },
+      {
+        "_name": "Rekha",
+        "_profilePic": "../assets/profile-images/Ellipse -1.png",
+        "_gender": "female",
+        "_department": [
+          "Sales",
+          "Finance",
+          "Engineer"
+        ],
+        "_salary": "949000",
+        "_note": "Good manager and engineer",
+        "_startDate": "20 Nov 2020",
+        "id": 4
       }
     ]
   }
