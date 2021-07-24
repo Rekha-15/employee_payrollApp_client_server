@@ -65,8 +65,23 @@ const getDeptHtml = (deptList) => {
                   .map(empData => empData.id)
                   .indexOf(empPayrollData.id);
     empPayrollList.splice(index, 1);
-    localStorage.setItem("EmployeePayrollList", JSON.stringify(empPayrollList));
-    document.querySelector(".emp-count").textContent = empPayrollList.length;
+    if(site_properties.use_local_storage.match("true")){
+      localStorage.setItem("EmployeePayrollList", JSON.stringify(empPayrollList));    
+      document.querySelector(".emp-count").textContent = empPayrollList.length;
+    }
+    else{
+      const deleteURL =
+        site_properties.server_url + empPayrollData.id.toString();
+      makeServiceCall("DELETE", deleteURL, true)
+        .then((responseText) => {
+          document.querySelector(".emp-count").textContent =
+            empPayrollList.length;
+        })
+        .catch((error) => {
+          console.log("DELETE Error Status: " + JSON.stringify(error));
+        });
+    }
+ 
     createInnerHTML();
   };
   const update = (node) => {
